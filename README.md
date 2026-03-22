@@ -1,130 +1,156 @@
-# RunAnywhere Web Starter App
+# 🧠 MindVault
+### Your Private AI Productivity Companion — Runs 100% On Your Device
 
-A minimal React + TypeScript starter app demonstrating **on-device AI in the browser** using the [`@runanywhere/web`](https://www.npmjs.com/package/@runanywhere/web) SDK. All inference runs locally via WebAssembly — no server, no API key, 100% private.
+> Built for **HackXtreme** | Category: **Web App — Problem Statement #1 (AI-Powered Productivity Tools)**  
+> Powered by **RunAnywhere SDK** | Zero Cloud · Zero APIs · Zero Privacy Risk
 
-## Features
+---
 
-| Tab | What it does |
-|-----|-------------|
-| **Chat** | Stream text from an on-device LLM (LFM2 350M) |
-| **Vision** | Point your camera and describe what the VLM sees (LFM2-VL 450M) |
-| **Voice** | Speak naturally — VAD detects speech, STT transcribes, LLM responds, TTS speaks back |
+## 🎯 What is MindVault?
 
-## Quick Start
+MindVault is a privacy-first AI productivity web app where **all AI inference runs locally in your browser** — no servers, no API keys, no internet required after the first load.
 
+Your thoughts, tasks, and conversations **never leave your device**. Ever.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 💬 **AI Chat** | Chat with a local LLM running in your browser via WebAssembly |
+| 📋 **Extract Tasks** | Paste any text — AI pulls out actionable tasks instantly |
+| 📝 **Summarize** | Summarize notes, emails, or documents in one line |
+| 📓 **Journal** | Write freely — AI generates a warm summary, stored locally |
+| 😊 **Mood Tracker** | Tracks your emotional trends from conversations over time |
+| 🕐 **Memory Lane** | Browse your full mood history, saved in localStorage |
+| 📊 **Mood Trends** | Beautiful area chart showing your mood patterns |
+
+---
+
+## 🔒 Why Local AI?
+
+| Problem (Cloud AI) | MindVault Solution |
+|---|---|
+| 💸 $0.08–0.35/min API costs | **$0.00 forever — inference on device** |
+| 🌐 Needs internet always | **Works fully offline after first load** |
+| 😰 Your data on external servers | **Data never leaves your browser** |
+| ⏳ 300–400ms network latency | **Zero network round-trips** |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** React + TypeScript + Vite
+- **AI SDK:** [RunAnywhere](https://runanywhere.ai) (`@runanywhere/web`, `@runanywhere/web-llamacpp`)
+- **Model:** LFM2-350M Q4_K_M (LiquidAI) — runs via LlamaCPP WebAssembly
+- **Charts:** Recharts
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
+- **Fonts:** Sora + JetBrains Mono
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repo
+```bash
+git https://github.com/projectsHosts/mindvault-ai.git
+cd mindvault
+```
+
+### 2. Install dependencies
 ```bash
 npm install
+```
+
+### 3. Run locally
+```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). Models are downloaded on first use and cached in the browser's Origin Private File System (OPFS).
-
-## How It Works
-
+### 4. Open in Chrome
 ```
-@runanywhere/web (npm package)
-  ├── WASM engine (llama.cpp, whisper.cpp, sherpa-onnx)
-  ├── Model management (download, OPFS cache, load/unload)
-  └── TypeScript API (TextGeneration, STT, TTS, VAD, VLM, VoicePipeline)
+http://localhost:5173
 ```
 
-The app imports everything from `@runanywhere/web`:
+> ⚠️ **Use Chrome** for best WebGPU support. On first load, the AI model (~250MB) downloads once and is cached in your browser.
 
-```typescript
-import { RunAnywhere, SDKEnvironment } from '@runanywhere/web';
-import { TextGeneration, VLMWorkerBridge } from '@runanywhere/web-llamacpp';
+---
 
-await RunAnywhere.initialize({ environment: SDKEnvironment.Development });
-
-// Stream LLM text
-const { stream } = await TextGeneration.generateStream('Hello!', { maxTokens: 200 });
-for await (const token of stream) { console.log(token); }
-
-// VLM: describe an image
-const result = await VLMWorkerBridge.shared.process(rgbPixels, width, height, 'Describe this.');
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
-├── main.tsx              # React root
-├── App.tsx               # Tab navigation (Chat | Vision | Voice)
-├── runanywhere.ts        # SDK init + model catalog + VLM worker
-├── workers/
-│   └── vlm-worker.ts     # VLM Web Worker entry (2 lines)
-├── hooks/
-│   └── useModelLoader.ts # Shared model download/load hook
 ├── components/
-│   ├── ChatTab.tsx        # LLM streaming chat
-│   ├── VisionTab.tsx      # Camera + VLM inference
-│   ├── VoiceTab.tsx       # Full voice pipeline
-│   └── ModelBanner.tsx    # Download progress UI
-└── styles/
-    └── index.css          # Dark theme CSS
+│   └── MindVaultDashboard.tsx   # Main app — all tabs & AI logic
+├── hooks/
+│   └── useModelLoader.ts        # Model download + load state
+├── styles/
+│   └── index.css                # Full design system
+├── workers/
+│   └── vlm-worker.ts            # VLM web worker
+├── runanywhere.ts               # SDK init + model registration
+├── App.tsx                      # Root component
+└── main.tsx                     # Entry point
 ```
 
-## Adding Your Own Models
+---
 
-Edit the `MODELS` array in `src/runanywhere.ts`:
-
-```typescript
-{
-  id: 'my-custom-model',
-  name: 'My Model',
-  repo: 'username/repo-name',           // HuggingFace repo
-  files: ['model.Q4_K_M.gguf'],         // Files to download
-  framework: LLMFramework.LlamaCpp,
-  modality: ModelCategory.Language,      // or Multimodal, SpeechRecognition, etc.
-  memoryRequirement: 500_000_000,        // Bytes
-}
-```
-
-Any GGUF model compatible with llama.cpp works for LLM/VLM. STT/TTS/VAD use sherpa-onnx models.
-
-## Deployment
-
-### Vercel
-
-```bash
-npm run build
-npx vercel --prod
-```
-
-The included `vercel.json` sets the required Cross-Origin-Isolation headers.
-
-### Netlify
-
-Add a `_headers` file:
+## 🤖 How the AI Works
 
 ```
-/*
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Embedder-Policy: credentialless
+User types message
+       ↓
+RunAnywhere SDK (browser)
+       ↓
+LlamaCPP (WebAssembly / WebGPU)
+       ↓
+LFM2-350M model (cached locally)
+       ↓
+Streamed response — no network call
 ```
 
-### Any static host
+**All 5 AI features use the same single local model** — just different prompts:
+- Chat → conversational prompt
+- Extract Tasks → bullet point extraction prompt  
+- Summarize → one-line summary prompt
+- Journal Summary → warm encouraging prompt
+- Mood Analysis → keyword-based sentiment (instant, zero inference cost)
 
-Serve the `dist/` folder with these HTTP headers on all responses:
+---
 
-```
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: credentialless
-```
+## 🏆 HackXtreme Judging Criteria
 
-## Browser Requirements
+| Criteria | MindVault |
+|---|---|
+| ✅ Innovation & Creativity | First-time mood tracking + journaling with fully local AI |
+| ✅ Technical Execution | RunAnywhere SDK, streaming LLM, WebAssembly inference |
+| ✅ User Experience | Polished UI, fast streaming, mobile responsive |
+| ✅ Practical Impact | Real productivity tool usable daily, offline |
+| ✅ Local AI Benefits | Privacy by architecture, zero cloud cost, offline-first |
 
-- Chrome 96+ or Edge 96+ (recommended: 120+)
-- WebAssembly (required)
-- SharedArrayBuffer (requires Cross-Origin Isolation headers)
-- OPFS (for persistent model cache)
+---
 
-## Documentation
+## 📸 Screenshots
 
-- [SDK API Reference](https://docs.runanywhere.ai)
-- [npm package](https://www.npmjs.com/package/@runanywhere/web)
-- [GitHub](https://github.com/RunanywhereAI/runanywhere-sdks)
+> ![alt text](image.png)![![alt text](image-2.png)](image-1.png)![alt text](image-3.png)
 
-## License
+---
 
-MIT
+## 👥 Team
+
+> Yogesh Nayak | Lynexes Team
+
+---
+
+## 📄 License
+
+MIT License — free to use, modify, and distribute.
+
+---
+
+<div align="center">
+  <strong>Built with ❤️ at HackXtreme · Powered by RunAnywhere SDK</strong><br/>
+  <em>The future of AI isn't in the cloud — it's on your device.</em>
+</div>
