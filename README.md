@@ -1,156 +1,148 @@
-# 🧠 MindVault
-### Your Private AI Productivity Companion — Runs 100% On Your Device
+# MindVault
 
-> Built for **HackXtreme** | Category: **Web App — Problem Statement #1 (AI-Powered Productivity Tools)**  
-> Powered by **RunAnywhere SDK** | Zero Cloud · Zero APIs · Zero Privacy Risk
+**A privacy-first AI productivity web app — all inference runs locally in your browser.**
 
----
-
-## 🎯 What is MindVault?
-
-MindVault is a privacy-first AI productivity web app where **all AI inference runs locally in your browser** — no servers, no API keys, no internet required after the first load.
-
-Your thoughts, tasks, and conversations **never leave your device**. Ever.
+Built for **HackXtreme** | Problem Statement #1 — AI-Powered Productivity Tools
+Powered by **RunAnywhere SDK** | Zero Cloud · Zero APIs · Zero Data Transmission
 
 ---
 
-## ✨ Features
+## Overview
 
-| Feature | Description |
+MindVault is a productivity companion where the AI model runs entirely on the user's device via WebAssembly. No servers. No API keys. No internet required after the first load. Every message, journal entry, and mood data point stays on the device — permanently.
+
+---
+
+## Features
+
+- **AI Chat** — Conversational assistant powered by a local LLM, streamed token by token in the browser
+- **Extract Tasks** — Paste any block of text and the on-device model extracts actionable tasks instantly
+- **Summarize** — Condenses notes, emails, or documents into a single clear sentence using local inference
+- **Journal** — Private writing space where AI generates an encouraging summary, stored in localStorage
+- **Mood Tracker** — Keyword-based sentiment analysis that tracks emotional trends across conversations
+- **Memory Lane** — Full mood history with labels and scores, persisted locally across sessions
+- **Mood Trends** — Area chart visualizing mood patterns over time
+
+---
+
+## Why Local AI
+
+| Cloud AI | MindVault |
 |---|---|
-| 💬 **AI Chat** | Chat with a local LLM running in your browser via WebAssembly |
-| 📋 **Extract Tasks** | Paste any text — AI pulls out actionable tasks instantly |
-| 📝 **Summarize** | Summarize notes, emails, or documents in one line |
-| 📓 **Journal** | Write freely — AI generates a warm summary, stored locally |
-| 😊 **Mood Tracker** | Tracks your emotional trends from conversations over time |
-| 🕐 **Memory Lane** | Browse your full mood history, saved in localStorage |
-| 📊 **Mood Trends** | Beautiful area chart showing your mood patterns |
+| $0.08 – $0.35 per minute in API costs | Zero inference cost — runs on device |
+| Requires internet at all times | Fully offline after first model download |
+| User data transmitted to external servers | Data never leaves the browser |
+| 300 – 400ms network latency per request | Zero network round-trips |
 
 ---
 
-## 🔒 Why Local AI?
+## Tech Stack
 
-| Problem (Cloud AI) | MindVault Solution |
-|---|---|
-| 💸 $0.08–0.35/min API costs | **$0.00 forever — inference on device** |
-| 🌐 Needs internet always | **Works fully offline after first load** |
-| 😰 Your data on external servers | **Data never leaves your browser** |
-| ⏳ 300–400ms network latency | **Zero network round-trips** |
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** React + TypeScript + Vite
-- **AI SDK:** [RunAnywhere](https://runanywhere.ai) (`@runanywhere/web`, `@runanywhere/web-llamacpp`)
-- **Model:** LFM2-350M Q4_K_M (LiquidAI) — runs via LlamaCPP WebAssembly
-- **Charts:** Recharts
-- **Animations:** Framer Motion
-- **Icons:** Lucide React
-- **Fonts:** Sora + JetBrains Mono
+- **Framework** — React 18 + TypeScript + Vite
+- **AI Runtime** — RunAnywhere SDK (`@runanywhere/web`, `@runanywhere/web-llamacpp`)
+- **Model** — LFM2-350M Q4\_K\_M by LiquidAI, executed via LlamaCPP WebAssembly
+- **Charts** — Recharts
+- **Animations** — Framer Motion
+- **Icons** — Lucide React
+- **Typography** — Sora, JetBrains Mono
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1. Clone the repo
+**Clone the repository**
 ```bash
-git https://github.com/projectsHosts/mindvault-ai.git
+git clone git https://github.com/projectsHosts/mindvault-ai.git
 cd mindvault
 ```
 
-### 2. Install dependencies
+**Install dependencies**
 ```bash
 npm install
 ```
 
-### 3. Run locally
+**Start the development server**
 ```bash
 npm run dev
 ```
 
-### 4. Open in Chrome
+**Open in browser**
 ```
 http://localhost:5173
 ```
 
-> ⚠️ **Use Chrome** for best WebGPU support. On first load, the AI model (~250MB) downloads once and is cached in your browser.
+> Use Chrome for best WebGPU support. On first load, the AI model (~250MB) downloads once and is cached in the browser permanently.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
 ├── components/
-│   └── MindVaultDashboard.tsx   # Main app — all tabs & AI logic
+│   └── MindVaultDashboard.tsx    Main application — all tabs and AI logic
 ├── hooks/
-│   └── useModelLoader.ts        # Model download + load state
+│   └── useModelLoader.ts         Model download and load state management
 ├── styles/
-│   └── index.css                # Full design system
+│   └── index.css                 Full design system and CSS variables
 ├── workers/
-│   └── vlm-worker.ts            # VLM web worker
-├── runanywhere.ts               # SDK init + model registration
-├── App.tsx                      # Root component
-└── main.tsx                     # Entry point
+│   └── vlm-worker.ts             VLM web worker entry point
+├── runanywhere.ts                SDK initialization and model registration
+├── App.tsx                       Root component with loading screen
+└── main.tsx                      Entry point
 ```
 
 ---
 
-## 🤖 How the AI Works
+## How the AI Works
 
 ```
-User types message
-       ↓
-RunAnywhere SDK (browser)
-       ↓
-LlamaCPP (WebAssembly / WebGPU)
-       ↓
-LFM2-350M model (cached locally)
-       ↓
-Streamed response — no network call
+User input
+    →  RunAnywhere SDK (browser context)
+    →  LlamaCPP (WebAssembly / WebGPU acceleration)
+    →  LFM2-350M model (cached in browser storage)
+    →  Streamed tokens — zero network calls
 ```
 
-**All 5 AI features use the same single local model** — just different prompts:
-- Chat → conversational prompt
-- Extract Tasks → bullet point extraction prompt  
-- Summarize → one-line summary prompt
-- Journal Summary → warm encouraging prompt
-- Mood Analysis → keyword-based sentiment (instant, zero inference cost)
+All five AI features run on the same single local model. The prompt changes per feature:
+
+- Chat — ChatML format conversational prompt
+- Extract Tasks — structured bullet point extraction prompt
+- Summarize — single sentence compression prompt
+- Journal Summary — warm reflective summary prompt
+- Mood Analysis — instant keyword-based classification, no inference cost
 
 ---
 
-## 🏆 HackXtreme Judging Criteria
+## Judging Criteria
 
-| Criteria | MindVault |
+| Criteria | Implementation |
 |---|---|
-| ✅ Innovation & Creativity | First-time mood tracking + journaling with fully local AI |
-| ✅ Technical Execution | RunAnywhere SDK, streaming LLM, WebAssembly inference |
-| ✅ User Experience | Polished UI, fast streaming, mobile responsive |
-| ✅ Practical Impact | Real productivity tool usable daily, offline |
-| ✅ Local AI Benefits | Privacy by architecture, zero cloud cost, offline-first |
+| Innovation and Creativity | Mood tracking and private journaling powered entirely by on-device AI |
+| Technical Execution | RunAnywhere SDK with streaming LLM, WebAssembly inference, ChatML prompting |
+| User Experience | Polished dark UI, real-time token streaming, mobile responsive layout |
+| Practical Impact | A daily-use productivity tool that works offline with zero data exposure |
+| Local AI Benefits | Privacy by architecture, zero cloud cost, offline-first by design |
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-> ![alt text](image.png)![![alt text](image-2.png)](image-1.png)![alt text](image-3.png)
-
----
-
-## 👥 Team
-
-> Yogesh Nayak | Lynexes Team
+> Add screenshots of Chat, Journal, Mood Tracker, and Memory Lane tabs here.
 
 ---
 
-## 📄 License
+## Team
+
+> Yogesh Nayak & Abhishek Nayak | Lynxes Team
+
+---
+
+## License
 
 MIT License — free to use, modify, and distribute.
 
 ---
 
-<div align="center">
-  <strong>Built with ❤️ at HackXtreme · Powered by RunAnywhere SDK</strong><br/>
-  <em>The future of AI isn't in the cloud — it's on your device.</em>
-</div>
+*Built at HackXtreme · Powered by RunAnywhere SDK*
+*The future of AI is on the device, not in the cloud.*
