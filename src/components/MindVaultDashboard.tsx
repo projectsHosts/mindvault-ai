@@ -53,29 +53,39 @@ export function MindVaultDashboard() {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
 
-  // Load persisted data
+  // ── Load persisted data ──
+  const [dataLoaded, setDataLoaded] = useState(false);
+
   useEffect(() => {
-    const savedMsgs = localStorage.getItem('mv_chat_v10');
-    const savedHistory = localStorage.getItem('mv_history_v10');
-    const savedJournal = localStorage.getItem('mv_journal_v10');
-    if (savedMsgs) setMessages(JSON.parse(savedMsgs));
-    if (savedHistory) setMoodHistory(JSON.parse(savedHistory));
-    if (savedJournal) setJournalEntries(JSON.parse(savedJournal));
+    try {
+      const savedMsgs    = localStorage.getItem('mv_chat_v10');
+      const savedHistory = localStorage.getItem('mv_history_v10');
+      const savedJournal = localStorage.getItem('mv_journal_v10');
+      if (savedMsgs)    setMessages(JSON.parse(savedMsgs));
+      if (savedHistory) setMoodHistory(JSON.parse(savedHistory));
+      if (savedJournal) setJournalEntries(JSON.parse(savedJournal));
+    } catch (e) {
+      console.warn('Failed to load saved data', e);
+    }
+    setDataLoaded(true);
   }, []);
 
-  // Persist & scroll
+  // ── Save — only AFTER initial load is done ──
   useEffect(() => {
+    if (!dataLoaded) return;
     localStorage.setItem('mv_chat_v10', JSON.stringify(messages));
     setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-  }, [messages, isThinking]);
+  }, [messages, isThinking, dataLoaded]);
 
   useEffect(() => {
+    if (!dataLoaded) return;
     localStorage.setItem('mv_history_v10', JSON.stringify(moodHistory));
-  }, [moodHistory]);
+  }, [moodHistory, dataLoaded]);
 
   useEffect(() => {
+    if (!dataLoaded) return;
     localStorage.setItem('mv_journal_v10', JSON.stringify(journalEntries));
-  }, [journalEntries]);
+  }, [journalEntries, dataLoaded]);
 
   // --- SEND CHAT MESSAGE ---
   const sendMessage = async () => {
@@ -90,9 +100,14 @@ export function MindVaultDashboard() {
     setIsThinking(true);
 
     try {
-      // ⚡ SHORT prompt = faster inference on low-end GPU
-      const prompt = `Assistant. Short helpful reply in 1 sentence.\nQ: ${userText}\nA:`;
-      const { stream } = await TextGeneration.generateStream(prompt, { maxTokens: 30, temperature: 0.7 });
+      // ⚡ Clean ChatML format — prevents prompt leak
+      const prompt = `<|im_start|>system
+You are a helpful assistant. Reply in 1-2 short sentences.<|im_end|>
+<|im_start|>user
+${userText}<|im_end|>
+<|im_start|>assistant
+`;
+      const { stream } = await TextGeneration.generateStream(prompt, { maxTokens: 40, temperature: 0.7 });
 
       const aiMsgId = Date.now() + 1;
       let isFirstChunk = true;
@@ -130,7 +145,7 @@ export function MindVaultDashboard() {
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: `📋 Extract tasks from: "${input}"` }]);
     try {
       // ⚡ Ultra short prompt
-      const prompt = `Tasks from this text as bullet points:\n"${input.substring(0, 120)}"\n-`;
+      const prompt = `<|im_start|>system\nExtract actionable tasks as bullet points. Only output the tasks, nothing else.<|im_end|>\n<|im_start|>user\n${input.substring(0, 150)}<|im_end|>\n<|im_start|>assistant\n• `;
       const res = await TextGeneration.generate(prompt, { maxTokens: 50, temperature: 0.3 });
       setMessages(prev => [...prev, { id: Date.now(), role: 'ai', text: '• ' + res.text.trim() }]);
     } catch { }
@@ -145,7 +160,7 @@ export function MindVaultDashboard() {
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: `📝 Summarize: "${input}"` }]);
     try {
       // ⚡ Ultra short prompt
-      const prompt = `One line summary: "${input.substring(0, 120)}"\nSummary:`;
+      const prompt = `<|im_start|>system\nSummarize the text in one clear sentence. Only output the summary.<|im_end|>\n<|im_start|>user\n${input.substring(0, 150)}<|im_end|>\n<|im_start|>assistant\n`;
       const res = await TextGeneration.generate(prompt, { maxTokens: 30, temperature: 0.5 });
       setMessages(prev => [...prev, { id: Date.now(), role: 'ai', text: res.text.trim() }]);
     } catch { }
@@ -178,7 +193,7 @@ export function MindVaultDashboard() {
     let aiSummary = 'Saved locally.';
     if (loader.state === 'ready') {
       try {
-        const prompt = `One encouraging sentence about: "${journalText.substring(0, 100)}"\nSummary:`;
+        const prompt = `<|im_start|>system\nWrite one warm encouraging sentence about this journal entry.<|im_end|>\n<|im_start|>user\n${journalText.substring(0, 150)}<|im_end|>\n<|im_start|>assistant\n`;
         const res = await TextGeneration.generate(prompt, { maxTokens: 25, temperature: 0.6 });
         aiSummary = res.text.trim();
       } catch { }
