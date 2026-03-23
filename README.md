@@ -126,12 +126,6 @@ All five AI features run on the same single local model. The prompt changes per 
 
 ---
 
-## Screenshots
-
-> Add screenshots of Chat, Journal, Mood Tracker, and Memory Lane tabs here.
-
----
-
 ## Team
 
 > Yogesh Nayak & Abhishek Nayak | Lynxes Team
